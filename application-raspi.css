@@ -1,0 +1,44 @@
+
+label#cond1 {
+    background-color: #FF0000;
+ }
+ 
+label#cond2 {
+    background-color: #00FF00;
+ }
+
+
+button#btn1 {
+    background-color: #0274d9;
+  }
+  
+label#main_header {
+    background-color:#00FF00;
+}
+
+*:hover {
+    background-color: #00FFFF;
+  }
+
+/*
+
+
+
+GtkLabel:selected {
+    background-color: #3085a9;
+}
+
+GtkLabel:hover {
+    background-color: #3085a9;
+}
+
+
+
+Gtkbuttonl#main_header:active {
+    background-color: #0274d9;
+  }
+
+Gtkbuttonl#main_header:hover {
+    background-color: #ff85a9;
+  }
+  */

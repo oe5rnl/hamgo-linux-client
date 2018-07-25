@@ -1,0 +1,18 @@
+
+GtkLabel#offline { background-color: #fa6a6a; }
+ 
+GtkLabel#online { background-color: #98f887; }
+
+AppHeaderLabel#offline {background-color: #f55e5e; }
+ 
+AppHeaderLabelLabel#online { background-color: #faf86a; }
+
+/*
+# GtkTreeView row:hover { color: #FFFFFF; background-color: #FF0000; }
+*/
+
+GtkTreeView row:nth-child(odd)  { color: #FFFFFF; background-color: #FF0000; }
+
+GtkTreeView row:selected   { color: #FFFFFF; background-color: #FFFF00; }
+
+*:hover { background-color: #00FFFF; }
