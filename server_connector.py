@@ -5,8 +5,9 @@
 # 
 #  author:      oe5rnl@oevsv.at, oe5nvl@oevsv.at
 #  description: HAMNET Messenger client für Linux
+#               based on OE1KBs Windows .NET Client
 #  license:     GNU_GENERAL_PUBLIC_LICENSE_V3
-# 
+
 import threading, time, os, sys
 import random
 import com
