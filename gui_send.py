@@ -94,7 +94,7 @@ class Sm(ABC):
   def on_key_release(self, widget, event, user_data=None):
 
     cnt = self.txt_buf.get_char_count()
-    print('rrrrrrrrrrrrrrrrrrrr-cnt='+str(cnt))
+    #print('cnt='+str(cnt))
 
     #print('1:'+str(self.shift))
     key = Gdk.keyval_name(event.keyval)

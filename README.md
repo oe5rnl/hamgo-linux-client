@@ -81,9 +81,9 @@ TODO:
 * Group Call zu Rufzeichen
 * Logfile
 * main_header color stimmt nicht immer
+* Senden mit CR
 
 Neu:
-* Senden mit CR
 * Begrezung der Message Textlänge 
 * Gui Widgets in Objekte verpackt
 
