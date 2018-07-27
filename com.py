@@ -12,7 +12,7 @@ import time, queue
 from gi.repository import GObject
 
 #fname = 'file_tcp.txt'
-version = 'L.0.5'
+version = 'L.0.5.2'
 
 #--------------------------------------------------
 class Com():

@@ -16,79 +16,153 @@ from gi.repository import Pango
 
 import time
 
-#--------------------------------------------------------------------------
-# --- online_ ----
-online_scrolledwindow = Gtk.ScrolledWindow()
-online_scrolledwindow.set_hexpand(True)
-online_scrolledwindow.set_vexpand(True)
+class Online:
 
-# create a liststore with one string column to use as the model
-online_liststore = Gtk.ListStore(str,str,str,str,str,str,str, float,str,str) 
+  def __init__(self):
 
-online_liststore.insert(0,['ONLINE', ' ', ' ', ' ' ,' ', ' ', ' ', time.time()+10, '#ffffff', '#000000'])
-#online_liststore.append(['OE5AAA', 'Hugo', '4020 Linz', 'JN78DH','18.06.00','44.143.97.20','1.5.4',12345])
+    #--------------------------------------------------------------------------
+    # --- online_ ----
+    self.scrolledwindow = Gtk.ScrolledWindow()
+    self.scrolledwindow.set_hexpand(True)
+    self.scrolledwindow.set_vexpand(True)
 
-# sort by time (= LH) 
-online_liststore.set_sort_column_id(7, Gtk.SortType.DESCENDING)
+    # create a liststore with one string column to use as the model
+    self.liststore = Gtk.ListStore(str,str,str,str,str,str,str, float,str,str) 
 
-# create the TreeView using liststore
-# https://python-gtk-3-tutorial.readthedocs.io/en/latest/treeview.html
-#
-online_treeview = Gtk.TreeView(online_liststore)
-online_scrolledwindow.add(online_treeview)
-#online_treeview.drag_source_unset()
+    self.liststore.insert(0,['ONLINE', ' ', ' ', ' ' ,' ', ' ', ' ', time.time()+10, '#ffffff', '#000000'])
+    #online_liststore.append(['OE5AAA', 'Hugo', '4020 Linz', 'JN78DH','18.06.00','44.143.97.20','1.5.4',12345])
 
-# create the TreeViewColumns to display the data    
-online_tvcall = Gtk.TreeViewColumn('Call')
-online_tvname = Gtk.TreeViewColumn('Name')
-online_tvinfo = Gtk.TreeViewColumn('Info')
-online_tvLOC = Gtk.TreeViewColumn('LOC')
-online_tvLH = Gtk.TreeViewColumn('LH')
-online_tvIP = Gtk.TreeViewColumn('IP')
-online_tvversion = Gtk.TreeViewColumn('Version')
+    # sort by time (= LH) 
+    self.liststore.set_sort_column_id(7, Gtk.SortType.DESCENDING)
 
-# add columns to treeview
-online_treeview.append_column(online_tvcall)
-online_treeview.append_column(online_tvname)
-online_treeview.append_column(online_tvinfo)
-online_treeview.append_column(online_tvLOC)
-online_treeview.append_column(online_tvLH)
-online_treeview.append_column(online_tvIP)
-online_treeview.append_column(online_tvversion)
+    # create the TreeView using liststore
+    # https://python-gtk-3-tutorial.readthedocs.io/en/latest/treeview.html
+    #
+    treeview = Gtk.TreeView(self.liststore)
+    self.scrolledwindow.add(treeview)
+    #online_treeview.drag_source_unset()
 
-# set the call text bold
-online_cell1 = Gtk.CellRendererText()
-online_cell1.props.weight_set = True
-online_cell1.props.weight = Pango.Weight.BOLD
+    # create the TreeViewColumns to display the data    
+    tvcall = Gtk.TreeViewColumn('Call')
+    tvname = Gtk.TreeViewColumn('Name')
+    tvinfo = Gtk.TreeViewColumn('Info')
+    tvLOC = Gtk.TreeViewColumn('LOC')
+    tvLH = Gtk.TreeViewColumn('LH')
+    tvIP = Gtk.TreeViewColumn('IP')
+    tvversion = Gtk.TreeViewColumn('Version')
 
-online_cell2 = Gtk.CellRendererText()
-#online_cell.set_property('cell-background', 'green') #white') #green')
+    # add columns to treeview
+    treeview.append_column(tvcall)
+    treeview.append_column(tvname)
+    treeview.append_column(tvinfo)
+    treeview.append_column(tvLOC)
+    treeview.append_column(tvLH)
+    treeview.append_column(tvIP)
+    treeview.append_column(tvversion)
 
-online_tvcall.pack_start(   online_cell1, True); online_tvcall.set_attributes(   online_cell1, text=0)
-online_tvname.pack_start(   online_cell2, True); online_tvname.set_attributes(   online_cell2, text=1)
-online_tvinfo.pack_start(   online_cell2, True); online_tvinfo.set_attributes(   online_cell2, text=2)
-online_tvLOC.pack_start(    online_cell2, True); online_tvLOC.set_attributes(    online_cell2, text=3)
-online_tvLH.pack_start(     online_cell2, True); online_tvLH.set_attributes(     online_cell2, text=4)
-online_tvIP.pack_start(     online_cell2, True); online_tvIP.set_attributes(     online_cell2, text=5)
-online_tvversion.pack_start(online_cell2, True); online_tvversion.set_attributes(online_cell2, text=6)
-# 7 time for sort
-# 8 background
-# 9 foreground
+    # set the call text bold
+    cell1 = Gtk.CellRendererText()
+    cell1.props.weight_set = True
+    cell1.props.weight = Pango.Weight.BOLD
 
-online_tvcall.add_attribute(online_cell1,  "background", 8)
-online_tvcall.add_attribute(online_cell1,  "foreground", 9)
+    cell2 = Gtk.CellRendererText()
+    #online_cell.set_property('cell-background', 'green') #white') #green')
 
-online_tvname.add_attribute(online_cell2,  "background", 8)
-online_tvname.add_attribute(online_cell2,  "foreground", 9)
+    tvcall.pack_start(   cell1, True); tvcall.set_attributes(   cell1, text=0)
+    tvname.pack_start(   cell2, True); tvname.set_attributes(   cell2, text=1)
+    tvinfo.pack_start(   cell2, True); tvinfo.set_attributes(   cell2, text=2)
+    tvLOC.pack_start(    cell2, True); tvLOC.set_attributes(    cell2, text=3)
+    tvLH.pack_start(     cell2, True); tvLH.set_attributes(     cell2, text=4)
+    tvIP.pack_start(     cell2, True); tvIP.set_attributes(     cell2, text=5)
+  
+    tvversion.pack_start(cell2, True); tvversion.set_attributes(cell2, text=6)
+    # 7 time for sort
+    # 8 background
+    # 9 foreground
 
-# make treeview searchable
-#online_treeview.set_search_column(0)
+    tvcall.add_attribute(cell1,  "background", 8)
+    tvcall.add_attribute(cell1,  "foreground", 9)
 
-# Allow sorting on the column
-#online_tvcolumn.set_sort_column_id(0)
+    tvname.add_attribute(cell2,  "background", 8)
+    tvname.add_attribute(cell2,  "foreground", 9)
 
-# Allow drag and drop reordering of rows
-#online_treeview.set_reorderable(True)
+    # make treeview searchable
+    #online_treeview.set_search_column(0)
 
-#online_window.add(online_treeview)
+    # Allow sorting on the column
+    #online_tvcolumn.set_sort_column_id(0)
 
+    # Allow drag and drop reordering of rows
+    #online_treeview.set_reorderable(True)
+
+    #online_window.add(online_treeview)
+
+
+  def UpdateOnlineCall(self, call):
+
+      #self.liststore.append([setup_config_data.call, 'Hugo', '1234 Ort', 'JN00AA','18.06.00','44.143.97.20','1.5.4',12345])
+
+      found = False
+      b = self.liststore.get_iter_first()      
+      # skip online info line IF NOT NONE  
+      self.liststore.set_value(b,7,time.time()+300)
+      b = self.liststore.iter_next(b) 
+      
+      while b is not None:
+        
+        # delete 'OFFLINE' row
+        if (self.liststore.get_value(b,0)=='OFFLINE'):
+          self.liststore.remove(b)
+
+        old = (self.liststore.get_value(b,7) < (time.time()-80))        
+        if old:   
+          self.liststore.set_value(b,8,'#f55e5e') # background: red  
+          self.liststore.set_value(b,9,'#000000') # foregrounf: black           
+        else:
+          self.liststore.set_value(b,8,'#98f887') # foreground: green
+          self.liststore.set_value(b,9,'#000000') # foreground: black 
+          
+        if self.liststore.get_value(b,0) == call.call:
+          #print('online: update user: '+str(call.call))
+          found = True   
+
+          if old:
+            self.liststore.set_value(b,8,'#98f887') # reactivate call -> green
+            self.liststore.set_value(b,9,'#000000') # foreground: black
+
+          self.liststore.set_value(b,1,str(call.name))
+          self.liststore.set_value(b,2,str(call.info))
+          self.liststore.set_value(b,3,str(call.locator))
+          self.liststore.set_value(b,4,str(call.lh))
+          self.liststore.set_value(b,5,str(call.ip))
+          self.liststore.set_value(b,6,str(call.version))
+          self.liststore.set_value(b,7,time.time())
+          
+        b = self.liststore.iter_next(b) 
+      # end while
+
+      if found == False:
+        #print('online: insert user: '+str(call.call))
+        self.liststore.append([call.call, call.name, call.info, call.locator ,str(call.lh), call.ip, call.version, time.time(),'#98f887', '#000000'])
+      
+      # Insert 'OFFLINE' row, if needed
+      b = self.liststore.get_iter_first()   
+      self.liststore.set_value(b,7,time.time()+300)
+      b = self.liststore.iter_next(b)      
+      while b is not None:
+        if self.liststore.get_value(b,8) == '#f55e5e': # red
+          self.liststore.insert_before(b,['OFFLINE', '', '', '','','','',self.liststore.get_value(b,7)+1, '#ffffff','#000000']) # whilte        
+          break
+        b = self.liststore.iter_next(b) 
+
+
+  #-------------------------------------------------
+  def SetOfflineCall(self):
+    b = self.liststore.get_iter_first()      
+    # skip online info line IF NOT NONE  
+    self.liststore.set_value(b,7,time.time()+300)
+    b = self.liststore.iter_next(b) 
+    while b is not None:
+      self.liststore.set_value(b,8,'#f55e5e')
+      b = self.liststore.iter_next(b) 
+    pass

@@ -33,6 +33,10 @@
 # https://wiki.gnome.org/Attic/GnomeArt/Tutorials/GtkThemes/GtkComboBox
 # https://developer.sugarlabs.org/src/gtk3-porting-guide.md.html
 # https://wiki.pythonde.pysv.org/Import
+# https://www.tutorialspoint.com/pygtk/pygtk_quick_guide.htm
+# http://eccentric.slavery.cx/misc/pygtk/pygtkfaq.html
+#
+# https://valadoc.org/gdk-3.0/Gdk.EventKey.html
 #
 # for gui debuging
 # gsettings set org.gtk.Settings.Debug enable-inspector-keybinding true
@@ -47,25 +51,19 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib, GObject
 from gi.repository import Pango
 
-import time,threading,sys,os, subprocess
+import time,threading,sys,os #, subprocess
 from datetime import datetime 
 #import prctl
 
 import com
 import server_connector
-from gui_debug_info import debug_info_tab, debug_info_osname
+import gui_debug_info
 import gui_config
-from gui_online import online_scrolledwindow, online_liststore
-
-from gui_send_messages import bc_content, bc_txt_buf, bc_send
-from gui_send_messages import cq_content, cq_txt_buf, cq_send
-from gui_send_messages import gc_content, gc_txt_buf, gc_send, gc_liststore, gc_group_combo
-from gui_send_messages import em_content, em_txt_buf, em_send
-
-from gui_about import about_tab
-from gui_history import history_frame, history_liststore
-from gui_log import log_tab, log_liststore
-
+import gui_about
+import gui_online
+import gui_history
+import gui_log
+import gui_send
 
 #------ MAIN Class------------------------------------------------------------
 class hgm():
@@ -74,20 +72,11 @@ class hgm():
   def __init__(self):
 
     self.winTitle = "HAMNET-Messanger by ÖVSV/OE1KBC - Linux (Version: "+com.version+") by OE5RNL, OE5NVL   "
-
-    self.bc_i = 1
-    self.cq_i = 1
-    self.gc_i = 1
-    self.em_i = 1
-    self.em_ok = False
     self.go = True
 
     #--------------------------------------------------------------------------
     #--------------------------------------------------------------------------
     # --- App_Main ----
-    
-    self.app_server_connector = server_connector.Server()
-    self.app_server_connector.setConfig_data(gui_config.setup_config_data)
 
     # create main window
     self.win = Gtk.Window()
@@ -110,10 +99,13 @@ class hgm():
     #settings.set_property("gtk-theme-name", "Metabox")
     settings.set_property("gtk-application-prefer-dark-theme", True)  # if you want use dark theme, set second arg to True
 
+    self.setup = gui_config.Setup()
+    self.debug_info = gui_debug_info.Debug_info()
+
     # load proper css file
     css_provider = Gtk.CssProvider()
     #('OS-NAME===>'+dbg.osname)
-    if debug_info_osname.find('Raspbian')!=-1:
+    if self.debug_info.osname.find('Raspbian')!=-1:
      ('Raspbian css loaded')
      css_provider.load_from_path(os.path.dirname(os.path.abspath(sys.argv[0]))+'/application-raspi.css')
     else:
@@ -124,14 +116,32 @@ class hgm():
     #--------------------------------------------------------------------------
     #----- Build Gui widgets --------------------------------------------------
     #--------------------------------------------------------------------------
-    
+    self.main_header = AppHeaderLabel()
+       
+    self.app_server_connector = server_connector.Server()
+    self.app_server_connector.setConfig_data(self.setup.app_config.config_data)
+
+    len = 20
+    self.bc = gui_send.send_bc(max_len=len, btn_label='send Broadcast', config_data=self.setup.app_config.config_data)
+    self.cq = gui_send.send_cq(max_len=len, btn_label='send CQ', config_data=self.setup.app_config.config_data)
+    self.gc = gui_send.send_gc(max_len=len, btn_label='send Group', config_data=self.setup.app_config.config_data)
+    self.em = gui_send.send_em(max_len=len, btn_label='send Emergency', config_data=self.setup.app_config.config_data)
+    self.about = gui_about.About()
+    self.history = gui_history.History()
+    self.online = gui_online.Online()
+    self.log = gui_log.Log()
+ 
+    self.setup.set_GcGroup(self.gc)
+    self.setup.set_Reconnect(self.app_server_connector)
+    self.setup.set_mainHeader(self.main_header)
+
     #--------------------------------------------------------------------------
     # --- Messages ----
     messagestabs = Gtk.Notebook() 
-    messagestabs.append_page(bc_content, Gtk.Label('Broadcast'))
-    messagestabs.append_page(cq_content, Gtk.Label('CQ'))
-    messagestabs.append_page(gc_content, Gtk.Label('Group Call'))
-    messagestabs.append_page(em_content, Gtk.Label('Emergency'))
+    messagestabs.append_page(self.bc.content, Gtk.Label('Broadcast'))
+    messagestabs.append_page(self.cq.content, Gtk.Label('CQ'))
+    messagestabs.append_page(self.gc.content, Gtk.Label('Group Call'))
+    messagestabs.append_page(self.em.content, Gtk.Label('Emergency'))
     messagestabs.append_page(Gtk.Label('not implementet yet'), Gtk.Label('Transfer'))
 
     # --- Messenger ----
@@ -146,7 +156,7 @@ class hgm():
     # Frame: online
     messenger_frame_online = Gtk.Frame()
     messenger_frame_online.set_label(" Online ")
-    messenger_frame_online.add(online_scrolledwindow) 
+    messenger_frame_online.add(self.online.scrolledwindow) 
 
     #Frame: messages
     messenger_frame_messages = Gtk.Frame()
@@ -157,7 +167,7 @@ class hgm():
     messenger_pan_hor.add2(messenger_frame_messages) 
 
     messenger_pan_ver.add1(messenger_pan_hor)
-    messenger_pan_ver.add2(history_frame) 
+    messenger_pan_ver.add2(self.history.frame) 
     
     # Build the gui from widgets
     main_grid = Gtk.Grid()
@@ -167,33 +177,22 @@ class hgm():
     # add grid to mainwindow
     self.win.add(main_grid)
 
-    self.main_header = AppHeaderLabel()
-
     # --- Add mainmenu-Tabs  ---
     main_tabs = Gtk.Notebook()
     main_tabs.append_page(messenger_pan_ver, Gtk.Label('Messenger')) # START tab1: Messenger   
-    main_tabs.append_page(log_tab, Gtk.Label('Log')) # tab2: Log   
-    main_tabs.append_page(gui_config.setup_tab, Gtk.Label('Setup')) # Tab3: config    
-    main_tabs.append_page(about_tab, Gtk.Label('About')) # tab4: About   
-    main_tabs.append_page(debug_info_tab, Gtk.Label('Debug-Info')) # tab5: debug-info
+    main_tabs.append_page(self.log.tab, Gtk.Label('Log')) # tab2: Log   
+    main_tabs.append_page(self.setup.tab, Gtk.Label('Setup')) # Tab3: config    
+    main_tabs.append_page(self.about.tab, Gtk.Label('About')) # tab4: About   
+    main_tabs.append_page(self.debug_info.tab, Gtk.Label('Debug-Info')) # tab5: debug-info
     
     # place elements
     main_grid.attach(self.main_header ,0,0,1,1)
     main_grid.attach(main_tabs,0,1,1,1)
     
     # set header info
-    self.main_header.setText(gui_config.setup_config_data.call+'  '+gui_config.setup_config_data.name+'  '+gui_config.setup_config_data.qth+'  '+gui_config.setup_config_data.locator)
+    self.main_header.setText(self.setup.app_config.config_data.call+'  '+self.setup.app_config.config_data.name+'  '+self.setup.app_config.config_data.qth+'  '+self.setup.app_config.config_data.locator)
     #self.main_header.setStatus(self.app_server_connector.getTCPconnected())
     self.main_header.setStatus(True) 
-
-    # connect Callbacks for buttons
-    gui_config.setup_save.connect("clicked", self.on_save_config_clicked)
-    gui_config.setup_btn_audio_test.connect("clicked", self.on_audio_test_clicked)
-
-    bc_send.connect("clicked", self.on_bc_send_clicked) 
-    cq_send.connect("clicked", self.on_cq_send_clicked) 
-    gc_send.connect("clicked", self.on_gc_send_clicked)
-    em_send.connect("clicked", self.on_em_send_clicked)
 
     # start the main thread for update GUI widgets
     self.to = threading.Thread(target = self.do_main)  
@@ -201,9 +200,9 @@ class hgm():
 
     # connect to hamgo server
     print('main:Tcp-connect')
-    print('IP='+gui_config.setup_config_data.server)
-    print('port='+str(gui_config.setup_config_data.port))
-    co = self.app_server_connector.TCPconnect(gui_config.setup_config_data.server, int(gui_config.setup_config_data.port))
+    print('IP='+self.setup.app_config.config_data.server)
+    print('port='+str(self.setup.app_config.config_data.port))
+    co = self.app_server_connector.TCPconnect(str(self.setup.app_config.config_data.server), int(self.setup.app_config.config_data.port))
     self.main_header.setStatus(co)
 
     # show all and start Gtk main loop
@@ -232,6 +231,11 @@ class hgm():
 
       # if necessery try reconnect 
       s = int(time.strftime("%S")) 
+
+      if ((s % 1)==0):
+        # Update WindowTitle with info and time
+        GLib.idle_add(self.update_winTitle)
+
       if ((s % 5)==0):
         r = self.app_server_connector.reconnect()
         self.main_header.setStatus(r)
@@ -242,26 +246,33 @@ class hgm():
         #print('')
         self.app_server_connector.heartbeat()
 
-      GLib.idle_add(self.update_winTitle)
-
       # Update online users
       if not com.Com.queue_s2o.empty(): 
         call = com.Com.queue_s2o.get()
         #print('--------------------->call Update-Online !' +call.call+' '+str(call.SeqCounter))
-        GLib.idle_add(self.UpdateOnlineCall, call)
+        GLib.idle_add(self.online.UpdateOnlineCall, call)
+
         # last time i received my own call from hamgo server
-        if call.call == gui_config.setup_config_data.call:
+        if call.call == self.setup.app_config.config_data.call:
           lhmycall = datetime.now()
     
+      # insert incomming messages into history and log
+      if not com.Com.queue_s2h.empty(): 
+        hist = com.Com.queue_s2h.get()
+        #print('---------------------->call insert-History !'+hist.src+' '+str(hist.SeqCounter))
+        GLib.idle_add(self.history.InsertHistoryCall, hist)
+        GLib.idle_add(self.log.InsertLogCall,  hist)
+
+      time.sleep(0.5)
+
       # check if no reply for my call last in the 160 secounds
       # if yes -> network or hamgo server down.
       akt=datetime.now()
-
       # print('AKT:'+str(d.total_seconds()))
       if (akt-lhmycall).total_seconds()>160:
         print("NETWORK PROBLEM ?")
         # set offline  ?
-        GLib.idle_add(self.SetOfflineCall)
+        GLib.idle_add(self.online.SetOfflineCall)
         
         h = server_connector.msg_History()
         h.SeqCounter = 0
@@ -271,116 +282,11 @@ class hgm():
         h.dst = '--'
         h.text = 'Connection to the HAMGO module not possible\nHAMGO nodule offline or check Setup please' 
         h.path = ' '
-        GLib.idle_add(self.InsertHistoryCall, h)
-        GLib.idle_add(self.InsertLogCall,  h)
+        GLib.idle_add(self.history.InsertHistoryCall, h)
+        GLib.idle_add(self.log.InsertLogCall,  h)
       
-      time.sleep(0.5)
-
-      # insert incomming messages into history and log
-      if not com.Com.queue_s2h.empty(): 
-        hist = com.Com.queue_s2h.get()
-        #print('---------------------->call insert-History !'+hist.src+' '+str(hist.SeqCounter))
-        GLib.idle_add(self.InsertHistoryCall, hist)
-        GLib.idle_add(self.InsertLogCall,  hist)
-
-      time.sleep(0.5)  
+      #time.sleep(0.5)  
     print('online terminated')  
-
-  #-------------------------------------------------
-  #---- Update GUI widgets--------------------------
-  #-------------------------------------------------
-  def UpdateOnlineCall(self, call):
-
-    #self.liststore.append([setup_config_data.call, 'Hugo', '1234 Ort', 'JN00AA','18.06.00','44.143.97.20','1.5.4',12345])
-
-    found = False
-    b = online_liststore.get_iter_first()      
-    # skip online info line IF NOT NONE  
-    online_liststore.set_value(b,7,time.time()+300)
-    b = online_liststore.iter_next(b) 
-    
-    while b is not None:
-       
-      # delete 'OFFLINE' row
-      if (online_liststore.get_value(b,0)=='OFFLINE'):
-        online_liststore.remove(b)
-
-      old = (online_liststore.get_value(b,7) < (time.time()-80))        
-      if old:   
-        online_liststore.set_value(b,8,'#f55e5e') # background: red  
-        online_liststore.set_value(b,9,'#000000') # foregrounf: black           
-      else:
-        online_liststore.set_value(b,8,'#98f887') # foreground: green
-        online_liststore.set_value(b,9,'#000000') # foreground: black 
-        
-      if online_liststore.get_value(b,0) == call.call:
-        #print('online: update user: '+str(call.call))
-        found = True   
-
-        if old:
-          online_liststore.set_value(b,8,'#98f887') # reactivate call -> green
-          online_liststore.set_value(b,9,'#000000') # foreground: black
-
-        online_liststore.set_value(b,1,str(call.name))
-        online_liststore.set_value(b,2,str(call.info))
-        online_liststore.set_value(b,3,str(call.locator))
-        online_liststore.set_value(b,4,str(call.lh))
-        online_liststore.set_value(b,5,str(call.ip))
-        online_liststore.set_value(b,6,str(call.version))
-        online_liststore.set_value(b,7,time.time())
-        
-      b = online_liststore.iter_next(b) 
-    # end while
-
-    if found == False:
-      #print('online: insert user: '+str(call.call))
-      online_liststore.append([call.call, call.name, call.info, call.locator ,str(call.lh), call.ip, call.version, time.time(),'#98f887', '#000000'])
-    
-    # Insert 'OFFLINE' row, if needed
-    b = online_liststore.get_iter_first()   
-    online_liststore.set_value(b,7,time.time()+300)
-    b = online_liststore.iter_next(b)      
-    while b is not None:
-      if online_liststore.get_value(b,8) == '#f55e5e': # red
-        online_liststore.insert_before(b,['OFFLINE', '', '', '','','','',online_liststore.get_value(b,7)+1, '#ffffff','#000000']) # whilte        
-        break
-      b = online_liststore.iter_next(b) 
-
-  #-------------------------------------------------
-  def SetOfflineCall(self):
-    b = online_liststore.get_iter_first()      
-    # skip online info line IF NOT NONE  
-    online_liststore.set_value(b,7,time.time()+300)
-    b = online_liststore.iter_next(b) 
-    while b is not None:
-      online_liststore.set_value(b,8,'#f55e5e')
-      b = online_liststore.iter_next(b) 
-    pass
-
-  #-------------------------------------------------
-  def InsertLogCall(self, call): 
-    #print('InsertLogCall: '+str(call.src))
-    log_liststore.insert(0,[time.strftime("%a, %d %b %Y %H:%M:%S"), str(call.htype), str(call.src), str(call.dst), str(call.text), str(call.path),time.time(),'#ffffff', '#000000' ])
-
-  #-------------------------------------------------
-  def InsertHistoryCall(self,hist): 
-    if   hist.dst == 'ALL':
-      backgroundColor = '#ffffff' # white
-      foregroundColor = '#0000ff' # blue
-    elif hist.dst == 'CQ':
-      backgroundColor = '#faf86a' # yellow
-      foregroundColor = '#000000' # black      
-    elif hist.dst == 'EM':
-      backgroundColor = '#ff0000' # red
-      foregroundColor  = '#ffffff'       
-    elif hist.payloadType == 4:   #GC
-      backgroundColor = '#00ff00' # green
-      foregroundColor = '#000000' # green       
-    else:
-      backgroundColor = '#ffffff'
-      foregroundColor  = '#000000'        
-
-    history_liststore.insert(0,[str(hist.htype), str(hist.time), str(hist.src), str(hist.dst), str(hist.text), time.time(), backgroundColor, foregroundColor]) 
 
 
   #-------------------------------------------------
@@ -388,194 +294,6 @@ class hgm():
     self.win.set_title(self.winTitle + time.strftime("%a, %d %b %Y %H:%M:%S"))    
 
 
-  #-------------------------------------------------
-  #---- Callbacks ----------------------------------
-  #-------------------------------------------------
-
-  def on_save_config_clicked(self,button):
-
-    server_tmp = gui_config.setup_config_data.server
-    port_tmp   = gui_config.setup_config_data.port
-
-    # config_data = Config_data
-    gui_config.setup_config_data.call    = gui_config.setup_call.get_text()
-    gui_config.setup_config_data.name    = gui_config.setup_name.get_text()
-    gui_config.setup_config_data.qth     = gui_config.setup_qth.get_text()
-    gui_config.setup_config_data.locator = gui_config.setup_locator.get_text()
-    gui_config.setup_config_data.rig1    = gui_config.setup_rig1.get_text()
-    gui_config.setup_config_data.rig2    = gui_config.setup_rig2.get_text()
-    gui_config.setup_config_data.rig3    = gui_config.setup_rig3.get_text()
-    gui_config.setup_config_data.server  = gui_config.setup_server.get_text()
-    gui_config.setup_config_data.port    = gui_config.setup_port.get_text()
-    gui_config.setup_config_data.ip      = gui_config.setup_ip.get_text()
-    gui_config.setup_config_data.log     = gui_config.setup_log.get_text()
-    gui_config.setup_config_data.audio   = gui_config.setup_audio_ls.get_value(gui_config.setup_audio_cbx.get_active_iter(),0)
-    gui_config.setup_config_data.gc      = gc_liststore.get_value(gc_group_combo.get_active_iter(),0)
-
-    gui_config.app_config.save_ini(gui_config.setup_config_data) 
-    self.app_server_connector.setConfig_data(gui_config.setup_config_data)
-
-    if ((server_tmp  != gui_config.setup_server.get_text()) or (port_tmp    != gui_config.setup_port.get_text()) ):
-      self.app_server_connector.reconnect(True)
-
-    self.main_header.setText(gui_config.setup_config_data.call+'  '+gui_config.setup_config_data.name+'  '+gui_config.setup_config_data.qth+'  '+gui_config.setup_config_data.locator)
-    
-  #---- setup_btn_audio_test ----------------------------------  
-  def on_audio_test_clicked(self,w):
-    #print('button: Audio test')
-    a = str(os.path.dirname(os.path.abspath(sys.argv[0])))+'/buzzer_x.wav'
-    subprocess.Popen(["/usr/bin/aplay", '-D'+gui_config.setup_config_data.audio, a])
-
-
-  #---- BC callback ----------------------------------
-  def on_bc_send_clicked(self,widget):  
-    #print('on_bc_send_clicked')  
-    
-    def dialog_response(widget, response_id):
-      if response_id == Gtk.ResponseType.OK:
-        #print("OK") 
-        pass               
-      widget.destroy()   
-
-    if ((gui_config.setup_config_data.call=='your call') or (gui_config.setup_config_data.name=='your name')):
-      md2 = Gtk.MessageDialog(flags=Gtk.DialogFlags.MODAL,type=Gtk.MessageType.ERROR,buttons=Gtk.ButtonsType.OK, message_format="Please check Setup: call, name, server, your IP, etc !")
-      md2.connect("response", dialog_response)
-      md2.run()
-      return   
-
-    on_bc_start = bc_txt_buf.get_start_iter()
-    on_bc_end   = bc_txt_buf.get_end_iter()
-    on_bc_text  = bc_txt_buf.get_text(on_bc_start, on_bc_end, True)
-
-    if len(on_bc_text)==0:
-      md2 = Gtk.MessageDialog(flags=Gtk.DialogFlags.MODAL,type=Gtk.MessageType.ERROR,buttons=Gtk.ButtonsType.OK, message_format="Text is needed")
-      md2.connect("response", dialog_response)
-      md2.run()
-      return
-
-    on_bc_msg_text   = '('+str(self.bc_i)+') '+on_bc_text
-
-    msg = server_connector.MSG(payloadType=6, payload=on_bc_msg_text, contactType=1, contact='ALL', source=gui_config.setup_config_data.call)   
-    b = msg.buildBarray()   
-    com.Com.queue_b2s.put(b)         
-    self.bc_i += 1
-
-  # --- CQ callback ----------------------------------
-  def on_cq_send_clicked(self,widget): 
-
-    def dialog_response(widget, response_id):
-      if response_id == Gtk.ResponseType.OK:
-        pass
-        #print("OK")                
-      widget.destroy()   
-
-    if ((gui_config.setup_config_data.call=='your call') or (gui_config.setup_config_data.name=='your name')):
-      md2 = Gtk.MessageDialog(flags=Gtk.DialogFlags.MODAL,type=Gtk.MessageType.ERROR,buttons=Gtk.ButtonsType.OK, message_format="Please check Setup: call, name, server, your IP, etc !")
-      md2.connect("response", dialog_response)
-      md2.run()
-      return   
-
-    on_cq_start = cq_txt_buf.get_start_iter()
-    on_cq_end   = cq_txt_buf.get_end_iter()
-    on_cq_text  = cq_txt_buf.get_text(on_cq_start, on_cq_end, True) #+++
-
-    if len(on_cq_text)==0:
-      md2 = Gtk.MessageDialog(flags=Gtk.DialogFlags.MODAL,type=Gtk.MessageType.ERROR,buttons=Gtk.ButtonsType.OK, message_format="Text is needed")
-      md2.connect("response", dialog_response)
-      md2.run()
-      return
-
-    msg_text = gui_config.setup_config_data.name+'\t' \
-              + gui_config.setup_config_data.qth+'\t' \
-              + gui_config.setup_config_data.ip+'\t' \
-              + gui_config.setup_config_data.locator+'\t' \
-              + com.version+'\t(' \
-              + str(self.cq_i)+') '+on_cq_text 
-    msg = server_connector.MSG(payloadType=0, payload=msg_text, contactType=1, contact='CQ', source=gui_config.setup_config_data.call)   
-    b = msg.buildBarray()   
-    com.Com.queue_b2s.put(b)         
-    self.cq_i += 1
-
-  # --- GC callback ----------------------------------
-  def on_gc_send_clicked(self,widget):     
-    #print('gc clicked')
-
-    def dialog_response(widget, response_id):
-      if response_id == Gtk.ResponseType.OK:
-        pass
-        #print("OK")                
-      widget.destroy()
-
-    if ((gui_config.setup_config_data.call=='your call') or (gui_config.setup_config_data.name=='your name')):
-      md2 = Gtk.MessageDialog(flags=Gtk.DialogFlags.MODAL,type=Gtk.MessageType.ERROR,buttons=Gtk.ButtonsType.OK, 
-            message_format="Please check Setup: call, name, server, your IP, etc !") 
-      md2.connect("response", dialog_response)
-      md2.run()
-      return   
-
-    on_gc_start = gc_txt_buf.get_start_iter()
-    on_gc_end   = gc_txt_buf.get_end_iter()
-    on_gc_text  = gc_txt_buf.get_text(on_gc_start, on_gc_end, True)
-
-    if len(on_gc_text)==0:
-      md2 = Gtk.MessageDialog(flags=Gtk.DialogFlags.MODAL,type=Gtk.MessageType.ERROR,buttons=Gtk.ButtonsType.OK, message_format="Text is needed")
-      md2.connect("response", dialog_response)
-      md2.run()
-      return
-
-    msg_text = '('+str(self.gc_i)+') '+on_gc_text 
-
-    gc_co_text = gc_liststore.get_value(gc_group_combo.get_active_iter(),0)
-    msg = server_connector.MSG(payloadType=4, payload=msg_text, contactType=1, contact=gc_co_text, source=gui_config.setup_config_data.call)   
-    b = msg.buildBarray()   
-    com.Com.queue_b2s.put(b)         
-    self.gc_i += 1
-
-  # --- EM callback ----------------------------------
-  def on_em_send_clicked(self,widget):   
-    #print('em clicked')
-
-    def dialog_response(widget, response_id):
-      if response_id == Gtk.ResponseType.YES:
-        #print("OK")     
-        self.em_ok = True 
-      else:
-        self.em_ok = False       
-      widget.destroy()  
-
-    if ((gui_config.setup_config_data.call=='your call') or (gui_config.setup_config_data.name=='your name')):
-      md2 = Gtk.MessageDialog(flags=Gtk.DialogFlags.MODAL,type=Gtk.MessageType.ERROR,buttons=Gtk.ButtonsType.OK, message_format="Please check Setup: call, name, server, your IP, etc !")
-      md2.connect("response", dialog_response)
-      md2.run()
-      return   
-
-    on_em_start = em_txt_buf.get_start_iter()
-    on_em_end   = em_txt_buf.get_end_iter()
-    on_em_text  = em_txt_buf.get_text(on_em_start, on_em_end, True)
-
-    if len(on_em_text)==0:
-      md2 = Gtk.MessageDialog(flags=Gtk.DialogFlags.MODAL,type=Gtk.MessageType.ERROR,buttons=Gtk.ButtonsType.OK, message_format="Text is needed")
-      md2.connect("response", dialog_response)
-      md2.run()
-      return
-
-    md2 = Gtk.MessageDialog(flags=Gtk.DialogFlags.MODAL,type=Gtk.MessageType.ERROR,buttons=Gtk.ButtonsType.YES_NO, 
-          message_format="Are you sure to send this Mergency-Message:\n"+on_em_text)
-    md2.connect("response", dialog_response)
-    md2.run()
-    if self.em_ok==False:
-      #print('em not sent')
-      return
-
-    msg_text = '('+str(self.em_i)+') '+on_em_text 
-
-    msg = server_connector.MSG(payloadType=7, payload=msg_text, contactType=1, contact='EM', source=gui_config.setup_config_data.call)   
-    b = msg.buildBarray()   
-    com.Com.queue_b2s.put(b)         
-    self.em_i += 1
-
-#-----------------------------------------------------
-#-----------------------------------------------------
 #-----------------------------------------------------
 class AppHeaderLabel(Gtk.Label):
 

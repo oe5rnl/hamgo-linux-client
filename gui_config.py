@@ -105,138 +105,194 @@ class Config():
 # --- Setup ----
 #--------------------------------------------------
 
-setup_tab = Gtk.Box()
-setup_tab.set_border_width(10)
+class Setup():
 
-setup_grid = Gtk.Grid()
-setup_grid.set_column_spacing(10) 
-setup_grid.set_row_spacing(10)
-setup_tab.add(setup_grid)
+  def __init__(self):
 
-app_config = Config()
-setup_config_data = app_config.getConfigData()
-#self.app_server_connector.setConfig_data(setup_config_data)
-print('config loaded')  
+    self.gc = None
+    self.sc = None
+    self.mh = None
 
-setup_call = Gtk.Entry()
-setup_call.set_text(setup_config_data.call)
+    self.tab = Gtk.Box()
+    self.tab.set_border_width(10)
 
-setup_name = Gtk.Entry()
-setup_name.set_text(setup_config_data.name)
+    grid = Gtk.Grid()
+    grid.set_column_spacing(10) 
+    grid.set_row_spacing(10)
+    self.tab.add(grid)
 
-setup_qth = Gtk.Entry()
-setup_qth.set_text(setup_config_data.qth)
+    self.app_config = Config()
+    #self.config_data = self.app_config.getConfigData() #???
+    #self.app_server_connector.setConfig_data(setup_config_data)
+    print('config loaded')  
 
-setup_locator = Gtk.Entry()
-setup_locator.set_text(setup_config_data.locator)
+    self.call = Gtk.Entry()
+    self.call.set_text(self.app_config.config_data.call)
 
-setup_rig1 = Gtk.Entry()
-setup_rig1.set_text(setup_config_data.rig1)
+    self.name = Gtk.Entry()
+    self.name.set_text(self.app_config.config_data.name)
 
-setup_rig2 = Gtk.Entry()
-setup_rig2.set_text(setup_config_data.rig2)
+    self.qth = Gtk.Entry()
+    self.qth.set_text(self.app_config.config_data.qth)
 
-setup_rig3 = Gtk.Entry()
-setup_rig3.set_text(setup_config_data.rig3)
+    self.locator = Gtk.Entry()
+    self.locator.set_text(self.app_config.config_data.locator)
 
-setup_server = Gtk.Entry()
-setup_server.set_text(setup_config_data.server)
+    self.rig1 = Gtk.Entry()
+    self.rig1.set_text(self.app_config.config_data.rig1)
 
-setup_port = Gtk.Entry()
-setup_port.set_text(setup_config_data.port)
+    self.rig2 = Gtk.Entry()
+    self.rig2.set_text(self.app_config.config_data.rig2)
 
-setup_ip = Gtk.Entry()
-setup_ip.set_text(setup_config_data.ip)
+    self.rig3 = Gtk.Entry()
+    self.rig3.set_text(self.app_config.config_data.rig3)
 
-setup_log = Gtk.Entry()
-setup_log.set_text(setup_config_data.log)
+    self.server = Gtk.Entry()
+    self.server.set_text(self.app_config.config_data.server)
 
-# ComboBox for Audio Devices
-setup_audio_ls = Gtk.ListStore(str)
-setup_audio_cbx   = Gtk.ComboBox()
-setup_audio_cbx.set_model(setup_audio_ls)
+    self.port = Gtk.Entry()
+    self.port.set_text(self.app_config.config_data.port)
 
-setup_audio_cell = Gtk.CellRendererText()
-setup_audio_cbx.pack_start(setup_audio_cell, True)
-setup_audio_cbx.add_attribute(setup_audio_cell, "text", 0)
+    self.ip = Gtk.Entry()
+    self.ip.set_text(self.app_config.config_data.ip)
 
-# fill ComboBox with Audio devices
-setup_audio_d = subprocess.check_output(['/usr/bin/aplay', '-L']).decode("utf-8").split('\n') # +++ try select !!!
-setup_audio_la=''
-setup_audio_lz=0
-setup_audio_d.insert(0, 'default')    #  ugly !!!!
-for setup_audio_lz in setup_audio_d:
+    self.log = Gtk.Entry()
+    self.log.set_text(self.app_config.config_data.log)
 
-  if len(setup_audio_lz)>0:
-    if (setup_audio_lz[0]!=' ') and len(setup_audio_lz)>5:
-      setup_audio_ls.append((setup_audio_la[:25],))
-      setup_audio_la = setup_audio_lz
-      setup_audio_lz += setup_audio_lz
-    else:
-      if setup_audio_lz==2:
-        setup_audio_la += setup_audio_lz
+    # ComboBox for Audio Devices
+    self.audio_ls = Gtk.ListStore(str)
+    self.audio_cbx   = Gtk.ComboBox()
+    self.audio_cbx.set_model(self.audio_ls)
 
-# select ComboBox entry from config
-setup_audio_iter = setup_audio_ls.get_iter_first()      #+++
-while setup_audio_ls is not None:
-  if (setup_audio_ls.get_value(setup_audio_iter,0)==setup_config_data.audio):  #'default'
-    break
-  setup_audio_iter = setup_audio_ls.iter_next(setup_audio_iter) 
-setup_audio_cbx.set_active_iter(setup_audio_iter) 
+    audio_cell = Gtk.CellRendererText()
+    self.audio_cbx.pack_start(audio_cell, True)
+    self.audio_cbx.add_attribute(audio_cell, "text", 0)
 
+    # fill ComboBox with Audio devices
+    audio_d = subprocess.check_output(['/usr/bin/aplay', '-L']).decode("utf-8").split('\n') # +++ try select !!!
+    audio_la=''
+    audio_lz=0
+    audio_d.insert(0, 'default')    #  ugly !!!!
+    for audio_lz in audio_d:
 
-setup_lcall=Gtk.Label('Call'); setup_lcall.set_alignment(0, 0.5) 
-setup_grid.attach(setup_lcall,0,0,1,1)
-setup_grid.attach(setup_call,1,0,1,1)
+      if len(audio_lz)>0:
+        if (audio_lz[0]!=' ') and len(audio_lz)>5:
+          self.audio_ls.append((audio_la[:25],))
+          audio_la = audio_lz
+          audio_lz += audio_lz
+        else:
+          if audio_lz==2:
+            audio_la += audio_lz
 
-setup_lname=Gtk.Label('Name'); setup_lname.set_alignment(0, 0.5)
-setup_grid.attach(setup_lname,0,1,1,1)
-setup_grid.attach(setup_name,1,1,1,1)
-
-setup_lqth=Gtk.Label('QTH'); setup_lqth.set_alignment(0, 0.5)
-setup_grid.attach(setup_lqth,0,2,1,1)
-setup_grid.attach(setup_qth,1,2,1,1)
-
-setup_llocator=Gtk.Label('Home Locator'); setup_llocator.set_alignment(0, 0.5)
-setup_grid.attach(setup_llocator,0,3,1,1)
-setup_grid.attach(setup_locator,1,3,1,1)
-
-setup_lrig1=Gtk.Label('RIG1'); setup_lrig1.set_alignment(0, 0.5)
-setup_grid.attach(setup_lrig1,0,4,1,1)
-setup_grid.attach(setup_rig1,1,4,1,1)
-
-setup_lrig2=Gtk.Label('RIG2'); setup_lrig2.set_alignment(0, 0.5)
-setup_grid.attach(setup_lrig2,0,5,1,1)
-setup_grid.attach(setup_rig2,1,5,1,1)
-
-setup_lrig3=Gtk.Label('RIG3'); setup_lrig3.set_alignment(0, 0.5)
-setup_grid.attach(setup_lrig3,0,6,1,1)
-setup_grid.attach(setup_rig3,1,6,1,1)
-
-setup_lserver=Gtk.Label('Server'); setup_lserver.set_alignment(0, 0.5)
-setup_grid.attach(setup_lserver,2,0,1,1)
-setup_grid.attach(setup_server,3,0,1,1)
-
-setup_lport=Gtk.Label('Port'); setup_lport.set_alignment(0, 0.5)
-setup_grid.attach(setup_lport,2,1,1,1)
-setup_grid.attach(setup_port,3,1,1,1)
-
-setup_lip=Gtk.Label('Eigene IP'); setup_lip.set_alignment(0, 0.5)
-setup_grid.attach(setup_lip,2,2,1,1)
-setup_grid.attach(setup_ip,3,2,1,1)
-
-setup_llog_pah=Gtk.Label('Log Path'); setup_llog_pah.set_alignment(0, 0.5) #+++
-setup_grid.attach(setup_llog_pah,2,3,1,1)
-setup_grid.attach(setup_log,3,3,1,1)
-
-setup_laudio=Gtk.Label('Audio'); setup_laudio.set_alignment(0, 0.5) #+++
-setup_grid.attach(setup_laudio,2,4,1,1)
-setup_grid.attach(setup_audio_cbx,3,4,1,1)
-
-setup_btn_audio_test=Gtk.Button('Audio Test')
-setup_grid.attach(setup_btn_audio_test,4,4,1,1)
-
-setup_save = Gtk.Button('save SETUP')
-setup_grid.attach(setup_save, 0, 8, 2, 1)
+    # select ComboBox entry from config
+    audio_iter = self.audio_ls.get_iter_first()      #+++
+    while self.audio_ls is not None:
+      if (self.audio_ls.get_value(audio_iter,0)==self.app_config.config_data.audio):  #'default'
+        break
+      audio_iter = self.audio_ls.iter_next(audio_iter) 
+    self.audio_cbx.set_active_iter(audio_iter) 
 
 
+    lcall=Gtk.Label('Call'); lcall.set_alignment(0, 0.5) 
+    grid.attach(lcall,0,0,1,1)
+    grid.attach(self.call,1,0,1,1)
+
+    lname=Gtk.Label('Name'); lname.set_alignment(0, 0.5)
+    grid.attach(lname,0,1,1,1)
+    grid.attach(self.name,1,1,1,1)
+
+    lqth=Gtk.Label('QTH'); lqth.set_alignment(0, 0.5)
+    grid.attach(lqth,0,2,1,1)
+    grid.attach(self.qth,1,2,1,1)
+
+    llocator=Gtk.Label('Home Locator'); llocator.set_alignment(0, 0.5)
+    grid.attach(llocator,0,3,1,1)
+    grid.attach(self.locator,1,3,1,1)
+
+    lrig1=Gtk.Label('RIG1'); lrig1.set_alignment(0, 0.5)
+    grid.attach(lrig1,0,4,1,1)
+    grid.attach(self.rig1,1,4,1,1)
+
+    lrig2=Gtk.Label('RIG2'); lrig2.set_alignment(0, 0.5)
+    grid.attach(lrig2,0,5,1,1)
+    grid.attach(self.rig2,1,5,1,1)
+
+    lrig3=Gtk.Label('RIG3'); lrig3.set_alignment(0, 0.5)
+    grid.attach(lrig3,0,6,1,1)
+    grid.attach(self.rig3,1,6,1,1)
+
+    lserver=Gtk.Label('Server'); lserver.set_alignment(0, 0.5)
+    grid.attach(lserver,2,0,1,1)
+    grid.attach(self.server,3,0,1,1)
+
+    lport=Gtk.Label('Port'); lport.set_alignment(0, 0.5)
+    grid.attach(lport,2,1,1,1)
+    grid.attach(self.port,3,1,1,1)
+
+    lip=Gtk.Label('Eigene IP'); lip.set_alignment(0, 0.5)
+    grid.attach(lip,2,2,1,1)
+    grid.attach(self.ip,3,2,1,1)
+
+    llog_pah=Gtk.Label('Log Path'); llog_pah.set_alignment(0, 0.5) #+++
+    grid.attach(llog_pah,2,3,1,1)
+    grid.attach(self.log,3,3,1,1)
+
+    laudio=Gtk.Label('Audio'); laudio.set_alignment(0, 0.5) #+++
+    grid.attach(laudio,2,4,1,1)
+    grid.attach(self.audio_cbx,3,4,1,1)
+
+    btn_audio_test=Gtk.Button('Audio Test')
+    grid.attach(btn_audio_test,4,4,1,1)
+
+    save = Gtk.Button('save SETUP')
+    grid.attach(save, 0, 8, 2, 1)
+
+    save.connect("clicked", self.on_save_config_clicked)
+    btn_audio_test.connect("clicked", self.on_audio_test_clicked)
+
+
+  def on_save_config_clicked(self,button):
+
+    server_tmp = self.app_config.config_data.server
+    port_tmp   = self.app_config.config_data.port
+
+    # config_data = Config_data
+    self.app_config.config_data.call    = self.call.get_text()
+    self.app_config.config_data.name    = self.name.get_text()
+    self.app_config.config_data.qth     = self.qth.get_text()
+    self.app_config.config_data.locator = self.locator.get_text()
+    self.app_config.config_data.rig1    = self.rig1.get_text()
+    self.app_config.config_data.rig2    = self.rig2.get_text()
+    self.app_config.config_data.rig3    = self.rig3.get_text()
+    self.app_config.config_data.server  = self.server.get_text()
+    self.app_config.config_data.port    = self.port.get_text()
+    self.app_config.config_data.ip      = self.ip.get_text()
+    self.app_config.config_data.log     = self.log.get_text()
+    self.app_config.config_data.audio   = self.audio_ls.get_value(self.audio_cbx.get_active_iter(),0)
+    
+    self.app_config.config_data.gc      = self.gc.gc_liststore.get_value(self.gc.gc_group_combo.get_active_iter(),0) # ??????
+
+    self.app_config.save_ini(self.app_config.config_data) 
+
+    self.sc.setConfig_data(self.app_config.config_data)
+
+    if ((server_tmp  != self.server.get_text()) or (port_tmp != self.port.get_text()) ):
+      self.sc.reconnect(True)
+
+    self.mh.setText(self.app_config.config_data.call+'  '+self.app_config.config_data.name+'  '+self.app_config.config_data.qth+'  '+self.app_config.config_data.locator)
+    
+  #---- setup_btn_audio_test ----------------------------------  
+  def on_audio_test_clicked(self,w):
+    #print('button: Audio test')
+    a = str(os.path.dirname(os.path.abspath(sys.argv[0])))+'/buzzer_x.wav'
+    subprocess.Popen(["/usr/bin/aplay", '-D'+self.app_config.config_data.audio, a])
+
+  #-----------------------
+  def set_GcGroup(self, group):
+    self.gc = group
+
+  def set_Reconnect(self, sc):
+    self.sc = sc
+
+  def set_mainHeader(self, mh):
+    self.mh = mh

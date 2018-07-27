@@ -502,11 +502,3 @@ class MSG:
       print('Payload='+str(self.Payload))      
       print('PayloadTypeString='+str(self.PayloadTypeString))
       
-#--------------------------------------------------
-if __name__ == "__main__":
-
-  msgbuf=b'\xaa\x01\x00\xe9\x34\xa6\x0a\x00\x00\x00\x00\xfd\x00\x00\x06\x4f\x45\x35\x4e\x56\x4c\x01\x00\x02\x43\x51\x07\x00\x3b\x4f\x45\x35\x58\x4c\x4c\x00\x2d\x00\x00\x00\x4d\x61\x6e\x66\x72\x65\x64\x09\x4c\x69\x6e\x7a\x09'
-
-  msg = MSG()
-  msg.getMSGfromBuffer(msgbuf)
-  print(msg.Source) 

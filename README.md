@@ -1,19 +1,17 @@
-Stand:   20180724
-Version: L.0.5
+Stand:   20180728
+Version: L.0.502
 
 
 **hgm.py ist ein HAMGO Messenger Client für Linux.**
 
-Er basiert auf dem Windows .net Client von OE1KBC
+Das Programm ist in python geschrieben. Als GUI Framework wurde
+PyGObject/Gtk3 verwendet.
+
+Er basiert auf dem Windows .NET Client von OE1KBC
 sowie dem HAMGO Protokoll von Alex OE1VQS und Kurt OE1KBC.
 
 Die Linux Version wurde von 
 Reinhold OE5RNL und Manfed OE5NVL erstellt.
-
-
-Weitere Infos im HAMNET: http://news.ampr.org
-
-Im Internet: https://oevsv.at/
 
 Das Programm sollte auf allen gängigen Linuxplattformen laufen.
 
@@ -22,9 +20,13 @@ Konkret getestet wurden:
 * Ubuntu   16.04 LTS
 * Ununtu   18.04 LTS
 * Debian   9.4.0 
-* Debian   8.7.1  
+* Debian   8.7.1
 * Raspbian 9 (stretch)
 
+
+Weitere Infos im HAMNET: http://news.ampr.org
+
+Im Internet: https://oevsv.at/
 
 -----------------------------------------------------------------
 Installation:
@@ -38,12 +40,8 @@ cd hamgo-linux-client
 
 ./hgm.py
 
-Dann im Menüpunkt Setup das CALL etc eingeben.
-
-Benötigt werden:
-* python 3
-* PyGObject
-* aplay
+Dann im Menüpunkt Setup das Call, Name, Server-IP,
+eigene IP  etc eingeben.
 
 Als HAMGO Server können z.B. verwendet werden:
 
@@ -52,6 +50,14 @@ Als HAMGO Server können z.B. verwendet werden:
 44.143.25.1
 
 44.143.104.135
+
+-----------------------------------------------------------------
+Folgened Abhängigkeiten sollten normalerweise bereits erfüllt sein:
+
+* python 3
+* PyGObject
+* aplay
+
 
 
 -----------------------------------------------------------------
@@ -67,22 +73,19 @@ Bitte im Setup ein Audiodevice wählen und mit "Audio Test"
   Erstens wollte ich die API kennen lernen.  
   Zweitens gab es bei den Treeviews nicht nachvollziehbare Porobleme...
 
-* Warum wurde in den Modulen für die GUI keine Klassen verwendet ?
-
-  Diese Version hatte ich ...
-  Allerdings gab es hier nicht nachvollziebare Probleme beim updaten 
-  der GUI, auch mit GLib.idle_add().
 
 ------------------------------------------------------------------
 TODO:
 
 * Filetransfer
 * Group Call zu Rufzeichen
+* Logfile
+* main_header color stimmt nicht immer
+
+Neu:
 * Senden mit CR
 * Begrezung der Message Textlänge 
-* Logfile
-* Yourcall check
-* main_header color stimmt nicht immer
+* Gui Widgets in Objekte verpackt
 
 
 73, OE5RNL Reinhold
