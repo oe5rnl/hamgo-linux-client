@@ -121,7 +121,7 @@ class hgm():
     self.app_server_connector = server_connector.Server()
     self.app_server_connector.setConfig_data(self.setup.app_config.config_data)
 
-    len = 20
+    len = 256
     self.bc = gui_send.send_bc(max_len=len, btn_label='send Broadcast', config_data=self.setup.app_config.config_data)
     self.cq = gui_send.send_cq(max_len=len, btn_label='send CQ', config_data=self.setup.app_config.config_data)
     self.gc = gui_send.send_gc(max_len=len, btn_label='send Group', config_data=self.setup.app_config.config_data)
