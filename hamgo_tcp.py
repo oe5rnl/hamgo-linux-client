@@ -7,8 +7,6 @@
 #  description: HAMNET Messenger client für Linux
 #               based on OE1KBs Windows .NET Client
 #  license:     GNU_GENERAL_PUBLIC_LICENSE_V3
- 
-# -*- coding: utf-8 -*-
 
 import socket, select
 import os, sys
